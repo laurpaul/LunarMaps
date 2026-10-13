@@ -1,13 +1,13 @@
-# Lunar south pole: layers, opposing sites, safety zones and landing plumes
+ Lunar south pole: layers, opposing sites, safety zones and landing plumes
 
-[Animation: the Moon spins and tilts to the south pole, slope, sunlight, Earth-in-view and permanently shadowed layers flash on, Artemis III and ILRS sites appear with 3 km safety zones, and a lander's dust plume sprays past the zones at Malapert](media/south-pole-zones-preview.gif)
+![Animation: the Moon spins and tilts to the south pole, slope, sunlight, Earth-in-view and permanently shadowed layers flash on, Artemis III and ILRS sites appear with 3 km safety zones, and a lander's dust plume sprays past the zones at Malapert](media/south-pole-zones-preview.gif)
 
 The animation, 47 s. Blue squares: NASA Artemis III candidate regions. Red triangles: ILRS and Chang'e-7 targets.
 Gold: permanently shadowed regions. Circles: 3 km safety zones, overlap hatched. Brown dots: illustrative landing-plume ejecta.
 This preview is a small, text-free cut (360 px, 5 fps). The full page with captions and the zone explorer is built in
 one minute (see below).
 
-Source for the 3D animation and the flat 2D layer maps.
+Source for the 3D animation (ESPL style) and the flat 2D layer maps.
 
 ## Contents
 
@@ -79,4 +79,3 @@ The animation page loads three.js 0.160.0 from cdn.jsdelivr.net, so it needs int
 - Safety zones: circles of 1 to 5 km radius (default 3 km), the range in Paulson and Roberts (AIAA SciTech 2026).
 - Plume: 2,600 illustrative ballistic particles, launch angle 0.5 to 3 deg, speed 80 to 600 m/s, lunar g = 1.62 m/s^2,
   range = v^2 sin(2 theta) / g. Not a model of any specific vehicle; landers are notional and not to scale.
-
