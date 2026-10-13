@@ -1,0 +1,685 @@
+<title>South Pole Sites and Zones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;1,400;1,900&family=Roboto+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: ESPL light page. Lab bar, one 16:9 animation stage with HUD, transport bar, zone explorer (radius + pair table + site table), sources. Single light theme by choice. */
+:root{
+  --bg:#F7F6F2; --surface:#FFFFFF; --surface-2:#F1EEE4; --fg:#0F2236; --muted:#5B6573; --rule:#E2DDD0;
+  --navy:#003057; --gold:#B3A369; --gold-ink:#857437; --psr:#EAAA00;
+  --cA:#2E5BBA; --cB:#E04F39; --mapbg:#E9E6DD; --ok:#2F7D5B;
+  --sans:"Roboto","Segoe UI",system-ui,sans-serif; --mono:"Roboto Mono",ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font:400 14.5px/1.5 var(--sans);margin:0}
+.espl-top{background:var(--surface);position:relative;overflow:hidden}
+.espl-top .in{max-width:1200px;margin:0 auto;padding:14px 16px 13px;display:flex;justify-content:space-between;align-items:center;gap:10px 24px;flex-wrap:wrap}
+.espl-top h1{margin:0;font:700 1.2rem/1.2 var(--sans);color:var(--navy);text-wrap:balance}
+.espl-top h1 em{font-style:normal;font-weight:500;color:var(--gold-ink);margin-left:6px}
+.espl-top .lab{display:flex;align-items:center;gap:10px;font-size:.8rem;color:var(--navy);line-height:1.15;font-weight:500}
+.espl-top .lab b{display:block;font-size:.62rem;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.espl-top .lab i{width:1px;height:30px;background:var(--gold)}
+.espl-top .gt{font:italic 900 1.55rem/1 var(--sans);color:var(--gold);letter-spacing:-.04em}
+.espl-top::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:linear-gradient(90deg,var(--navy) 0 40%,var(--gold) 40% 100%)}
+.espl-top::before{content:"";position:absolute;left:-60px;top:-30px;width:260px;height:140px;border:1.5px solid var(--gold);border-radius:24px;transform:skewX(-28deg);opacity:.25;pointer-events:none}
+.wrap{max-width:1200px;margin:0 auto;padding-inline:16px;padding-block:18px 28px;display:flex;flex-direction:column;gap:14px}
+.stage{position:relative;width:100%;aspect-ratio:16/9;background:var(--mapbg);border:1px solid var(--rule);border-radius:4px;overflow:hidden;max-width:100%}
+#gl{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hud{position:absolute;inset:0;pointer-events:none}
+.chap{position:absolute;left:16px;top:14px;display:flex;flex-direction:column;gap:2px;max-width:min(60%,440px);background:rgba(255,255,255,.92);border:1px solid var(--rule);border-left:3px solid var(--gold);border-radius:3px;padding:8px 12px 9px}
+.chap .n{font:500 11px/1 var(--mono);color:var(--gold-ink);letter-spacing:.08em}
+.chap .t{font:700 22px/1.15 var(--sans);color:var(--navy);text-wrap:balance}
+.chap .c{font:400 13px/1.4 var(--sans);color:var(--muted);max-width:46ch}
+.legend{position:absolute;left:16px;bottom:16px;background:rgba(255,255,255,.92);border:1px solid var(--rule);border-radius:3px;padding:8px 10px;transition:opacity .3s}
+.legend .lt{font:700 10.5px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--navy);margin-bottom:6px}
+.legend .bar{display:flex}
+.legend .bar div{min-width:30px;flex:1 1 0}
+.legend .bar i{display:block;height:8px}
+.legend .bar span{display:block;font:400 10.5px/1 var(--mono);color:var(--muted);margin-top:4px;white-space:nowrap}
+.legend .zl{display:grid;grid-template-columns:auto 1fr;gap:4px 8px;align-items:center;font-size:11.5px;color:var(--fg)}
+.sym{display:inline-block;width:11px;height:11px;flex:none}
+.sym.a{background:var(--cA);outline:1.5px solid #fff;box-shadow:0 0 0 2.5px var(--cA)}
+.sym.b{background:var(--cB);clip-path:polygon(50% 0,100% 100%,0 100%)}
+.sym.ax{background:#fff;box-shadow:inset 0 0 0 2px var(--cA)}
+.sym.bx{background:var(--cB);clip-path:polygon(50% 0,100% 100%,0 100%,0 100%,22% 82%,78% 82%,50% 26%,22% 82%,0 100%);}
+.sym.ring{border-radius:50%;border:2px solid var(--navy);background:rgba(0,48,87,.12)}
+.sym.hatch{background:repeating-linear-gradient(45deg,var(--navy) 0 1.5px,transparent 1.5px 4px);border:1px solid var(--navy)}
+.key{position:absolute;right:16px;top:14px;background:rgba(255,255,255,.94);border:1px solid var(--rule);border-radius:3px;padding:9px 11px;font-size:12px;display:flex;flex-direction:column;gap:5px;transition:opacity .4s;max-width:250px}
+.key .row{display:flex;align-items:center;gap:8px;color:var(--fg)}
+.key small{color:var(--muted);font-size:11px;line-height:1.35}
+.cards{position:absolute;right:16px;top:14px;display:flex;flex-direction:column;gap:8px;transition:opacity .4s;width:232px}
+.card{background:rgba(255,255,255,.95);border:1px solid var(--rule);border-radius:3px;padding:8px 10px;font-size:12px}
+.card.a{border-top:3px solid var(--cA)} .card.b{border-top:3px solid var(--cB)}
+.card .h{display:flex;align-items:center;gap:7px;font-weight:700;color:var(--navy);font-size:12.5px}
+.card .p{font:500 10px/1 var(--mono);color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin:3px 0 6px}
+.card dl{display:grid;grid-template-columns:1fr auto;gap:2px 10px;margin:0}
+.card dt{color:var(--muted)} .card dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;font-family:var(--mono);font-size:11.5px}
+.lbl{position:absolute;transform:translate(9px,-50%);font:500 11px/1.1 var(--sans);white-space:nowrap;padding:2px 5px;border-radius:2px;background:rgba(255,255,255,.9);transition:opacity .25s}
+.lbl.a{color:var(--cA);border-left:2px solid var(--cA)}
+.lbl.b{color:var(--cB);border-left:2px solid var(--cB)}
+.lbl.x{font-style:italic;opacity:.85}
+.tag{position:absolute;transform:translate(-50%,-50%);font:500 10px/1 var(--mono);color:var(--navy);background:rgba(255,255,255,.85);padding:1px 4px;border-radius:2px;white-space:nowrap}
+.call{position:absolute;transform:translate(-50%,-100%);background:var(--navy);color:#fff;font:500 12px/1.4 var(--sans);padding:7px 10px;border-radius:3px;white-space:nowrap;transition:opacity .3s}
+.call b{color:var(--gold);font-weight:700}
+.call::after{content:"";position:absolute;left:50%;bottom:-5px;margin-left:-5px;border:5px solid transparent;border-bottom:0;border-top-color:var(--navy)}
+.meter{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);background:rgba(255,255,255,.95);border:1px solid var(--rule);border-radius:3px;padding:8px 12px;width:min(440px,70%);transition:opacity .3s}
+.meter .mt{display:flex;justify-content:space-between;font:500 11px/1 var(--mono);color:var(--navy);margin-bottom:6px;gap:8px}
+.meter .track{position:relative;height:10px;background:var(--surface-2);border-radius:2px}
+.meter .fill{position:absolute;left:0;top:0;bottom:0;background:var(--navy);border-radius:2px}
+.meter .touch{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--cB)}
+.meter .ticks{display:flex;justify-content:space-between;font:400 10px/1 var(--mono);color:var(--muted);margin-top:5px}
+.scale{position:absolute;right:18px;bottom:18px;font:500 11px/1 var(--mono);color:var(--navy);display:flex;flex-direction:column;align-items:flex-end;gap:4px;transition:opacity .3s}
+.scale i{display:block;height:6px;border:2px solid var(--navy);border-top:0}
+.endcard{position:absolute;inset:0;display:grid;place-items:center;background:rgba(247,246,242,.84);transition:opacity .5s}
+.endcard .box{max-width:600px;margin:16px;padding:20px 24px;background:var(--surface);border:1px solid var(--rule);border-top:3px solid var(--gold);display:flex;flex-direction:column;gap:10px}
+.endcard h2{margin:0;font:700 19px/1.25 var(--sans);color:var(--navy);text-wrap:balance}
+.endcard p{margin:0;color:var(--muted);font-size:13px}
+.endcard .nums{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.endcard .nums div{border-left:3px solid var(--rule);padding-left:10px}
+.endcard .nums b{display:block;font:700 22px/1.1 var(--sans);font-variant-numeric:tabular-nums}
+.endcard .nums span{font-size:11.5px;color:var(--muted)}
+.loading{position:absolute;inset:0;display:grid;place-items:center;font:500 14px var(--sans);color:var(--navy);background:var(--mapbg)}
+.transport{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.btn{font:500 12px/1 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--navy);border:0;border-radius:3px;padding:9px 14px;cursor:pointer;min-width:84px}
+.btn.ghost{background:transparent;color:var(--navy);border:1px solid var(--rule)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.trk{flex:1 1 320px;min-width:0;display:flex;flex-direction:column;gap:4px}
+.trk input{width:100%;accent-color:var(--navy);margin:0}
+.ticks2{position:relative;height:14px;font:400 10.5px/1 var(--mono);color:var(--muted)}
+.ticks2 span{position:absolute;white-space:nowrap}
+.time{font:500 12px var(--mono);color:var(--navy);font-variant-numeric:tabular-nums;min-width:86px;text-align:right}
+.loop{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted)}
+.loop input{accent-color:var(--navy)}
+.explorer{border:1px solid var(--rule);background:var(--surface);border-radius:4px;display:flex;flex-direction:column}
+.explorer .eh{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--rule)}
+.explorer h2{margin:0;font:700 16px/1.2 var(--sans);color:var(--navy)}
+.explorer h2 small{display:block;font:400 12.5px/1.4 var(--sans);color:var(--muted);margin-top:3px}
+.rad{display:flex;align-items:center;gap:12px;flex:1 1 300px;max-width:440px}
+.rad label{font:700 10.5px/1.2 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--navy);white-space:nowrap}
+.rad input{flex:1;accent-color:var(--gold-ink);min-width:0}
+.rad output{font:700 18px/1 var(--mono);color:var(--navy);min-width:64px;text-align:right}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:0}
+.pane{padding:12px 16px 16px;min-width:0}
+.pane+.pane{border-left:1px solid var(--rule)}
+.pane h3{margin:0 0 8px;font:700 10.5px/1.3 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--navy)}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th{font:500 10.5px/1.2 var(--sans);letter-spacing:.04em;text-transform:uppercase;color:var(--muted);text-align:left;padding:6px 8px;border-bottom:1px solid var(--rule);white-space:nowrap}
+td{padding:6px 8px;border-bottom:1px solid var(--surface-2);white-space:nowrap;font-variant-numeric:tabular-nums}
+td.n{font-family:var(--mono);font-size:11.5px;text-align:right}
+th.n{text-align:right}
+td .nm{display:inline-flex;align-items:center;gap:6px}
+.pill{display:inline-block;font:500 11px/1 var(--sans);padding:4px 7px;border-radius:10px;white-space:nowrap}
+.pill.bad{background:#FBE3DE;color:#9E2F1C}
+.pill.near{background:#FBF1D5;color:#7a5800}
+.pill.ok{background:#E3EEF7;color:var(--navy)}
+.foot{font-size:11.5px;color:var(--muted);margin-top:8px}
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px 24px;border-top:1px solid var(--rule);padding-top:12px;font-size:12.5px;color:var(--muted)}
+.notes h3{margin:0 0 4px;font:700 10.5px/1.3 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--navy)}
+.notes p{margin:0}
+.notes a{color:var(--navy)}
+@media (max-width:900px){ .grid2{grid-template-columns:1fr} .pane+.pane{border-left:0;border-top:1px solid var(--rule)} }
+@media (max-width:700px){
+  .stage{aspect-ratio:4/5}
+  .chap .t{font-size:18px}
+  .chap{max-width:calc(100% - 32px)}
+  .key,.cards{display:none}
+  .ticks2{display:none}
+  .meter{width:calc(100% - 32px)}
+  .endcard .nums{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){ .lbl,.call,.legend,.key,.endcard,.cards,.meter{transition:none} }
+</style>
+
+<header class="espl-top"><div class="in">
+  <h1>Lunar South Pole<em>Opposing sites, safety zones and landing plumes</em></h1>
+  <div class="lab"><span class="gt">GT</span><i></i><span><b>Georgia Tech</b>Engineering Space Policy Laboratory</span></div>
+</div></header>
+
+<main class="wrap">
+  <div class="stage" id="stage">
+    <canvas id="gl" aria-label="Animated 3D Moon showing south polar data layers, Artemis III and ILRS sites, safety zones and a landing plume"></canvas>
+    <div class="hud" id="hud">
+      <div class="chap"><span class="n" id="chN">01</span><span class="t" id="chT">The Moon</span><span class="c" id="chC"></span></div>
+      <div class="legend" id="legend"></div>
+      <div class="key" id="key">
+        <div class="row"><span class="sym a"></span>NASA Artemis III candidate region</div>
+        <div class="row"><span class="sym b"></span>ILRS or Chang'e-7 target</div>
+        <div class="row"><span class="sym ax"></span>Position approximate, excluded from distances</div>
+        <small>Markers sit at region centres. NASA's regions span several kilometres.</small>
+      </div>
+      <div class="cards" id="cards"></div>
+      <div id="labels"></div>
+      <div id="tags"></div>
+      <div class="call" id="call"></div>
+      <div class="meter" id="meter">
+        <div class="mt"><span>Zone radius <b id="mR"></b></span><span id="mS"></span></div>
+        <div class="track"><div class="fill" id="mF"></div><div class="touch" id="mT"></div></div>
+        <div class="ticks"><span>1 km</span><span>2</span><span>3</span><span>4</span><span>5 km</span></div>
+      </div>
+      <div class="scale" id="scale"><span id="scaleT"></span><i id="scaleBar"></i></div>
+      
+    </div>
+    <div class="loading" id="loading">Building the Moon…</div>
+  </div>
+
+  <div class="transport">
+    <button class="btn" id="play">Pause</button>
+    <button class="btn ghost" id="restart">Restart</button>
+    <div class="trk">
+      <input type="range" id="scrub" min="0" max="47.5" step="0.01" value="0" aria-label="Animation time">
+      <div class="ticks2" id="ticks"></div>
+    </div>
+    <span class="time" id="time">0:00 / 0:47</span>
+    <label class="loop"><input type="checkbox" id="loop" checked> Loop</label>
+  </div>
+
+  <section class="explorer" aria-labelledby="exT">
+    <div class="eh">
+      <h2 id="exT">Zone explorer<small>Set the safety-zone radius from 1 to 5 km. The animation, the plume readout and the pair table all update.</small></h2>
+      <div class="rad"><label for="zr">Zone radius</label><input type="range" id="zr" min="1" max="5" step="0.1" value="3"><output id="zrv">3.0 km</output></div>
+    </div>
+    <div class="grid2">
+      <div class="pane">
+        <h3>Closest opposing pairs</h3>
+        <div class="tw"><table id="pairs"></table></div>
+        <p class="foot">Separation is great-circle distance between marker centres. Zones touch when the radius reaches half the separation. Approximate positions are left out.</p>
+      </div>
+      <div class="pane">
+        <h3>Sites</h3>
+        <div class="tw"><table id="sites"></table></div>
+        <p class="foot">Elevation and slope from the 1/8° grid. Sunlight and Earth in view are the 0.25° cell averages for 2026. Nearest PSR is the distance to the closest cell the Sun never reached.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="notes">
+    <div><h3>Terrain and layers</h3><p>Terrain is a continuous surface from a LOLA-derived 1/8° elevation grid: 0.25° worldwide and a bicubic-smoothed polar grid (about 0.7 km spacing, interpolated) south of 75°S, coloured in 1.25 km bands with 250 m contour lines. Sunlight, Earth in view, slope and shadowed regions come from <span style="font-family:var(--mono)">lunar_layers.py</span> (JPL DE440, 2026, 3-hour steps, 0.25° cells), lightly smoothed and drawn as isobands on the GPU so their edges stay smooth at any zoom.</p></div>
+    <div><h3>Sites and landers</h3><p>The nine Artemis III regions NASA named in October 2024 (<a href="https://www.nasa.gov/news-release/nasa-identifies-candidate-regions-for-landing-next-americans-on-moon/" target="_blank" rel="noopener">NASA</a>), at LROC NAC mosaic centres where available; Mons Mouton at its summit. Chang'e-7: 88.8°S 123.4°E. ILRS: Amundsen and Malapert (Shi et al. 2022), Malapert placed at the massif's high point; Shackleton ridge, Nobile Rim 1 and Slater Plain are approximate. Landers are notional icons, not to scale.</p></div>
+    <div><h3>Zones and plume</h3><p>Zones are circles of the chosen radius, draped on the terrain; the slider covers 1 to 5 km, the range in the Paulson and Roberts safety-zone geometry paper (AIAA SciTech 2026). The plume launches 2,600 particles on ballistic arcs under lunar gravity (1.62 m/s²): landing range = v² sin 2θ / g. Arc heights are drawn 10× and time runs 6× fast. Shares quoted are of this illustrative spray only.</p></div>
+  </section>
+</main>
+
+<script>/*GT*/</script>
+<script>/*ZDATA*/</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
+<script type="module">
+import * as THREE from 'three';
+
+const GT = window.GLOBE_TEX, Z = window.ZONE_DATA;
+const R_KM = 1737.4, DEG = Math.PI/180, COLAT = GT.colat;
+const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const ease=x=>{x=clamp(x);return x*x*(3-2*x);};
+const easeIO=x=>{x=clamp(x);return x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;};
+const win=(t,a,b)=>clamp((t-a)/(b-a));
+const llv=(lat,lon,r=1)=>{ const a=lat*DEG,b=lon*DEG; return new THREE.Vector3(r*Math.cos(a)*Math.sin(b), r*Math.sin(a), r*Math.cos(a)*Math.cos(b)); };
+const gcKm=(p,q)=>R_KM*Math.acos(clamp(p.clone().normalize().dot(q.clone().normalize()),-1,1));
+function tangentBasis(n){ const up=Math.abs(n.y)<0.99?new THREE.Vector3(0,1,0):new THREE.Vector3(1,0,0);
+  const e=new THREE.Vector3().crossVectors(up,n).normalize(), f=new THREE.Vector3().crossVectors(n,e).normalize(); return [e,f]; }
+
+// ---------- layer and relief styling (from lunar_layers.py) ----------
+const RELIEF_COLORS=["#262a31","#373b41","#46494f","#55575c","#626568","#707275","#7d7f81","#8a8b8d","#969898","#a3a4a4","#afb0af","#bcbcbb","#c8c8c6","#d4d4d1","#e0dfdc","#ecebe7"];
+const LAYERS={
+  sun:  {title:'Sunlight (% of year)', thr:[10,25,40,55,70,85], col:["#fde8dc","#f9c3a6","#f29470","#e0613f","#b8402a","#86281b"]},
+  earth:{title:'Earth in view (% of time)', thr:[10,25,40,55,70,85], col:["#e3ecfb","#bccff3","#8eaee8","#5b85d6","#3a5dae","#22397a"]},
+  slope:{title:'Slope (degrees)', thr:[5,10,15,20,25], col:["#ece6f7","#cdbdec","#a991dc","#8364c6","#5a3a9e"]}
+};
+
+// ---------- decode grids ----------
+const b64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function inflate(s){ const ds=new DecompressionStream('deflate'); return new Uint8Array(await new Response(new Blob([b64(s)]).stream().pipeThrough(ds)).arrayBuffer()); }
+async function decodeHeight(data,w,h){ const raw=await inflate(data), n=w*h, out=new Float32Array(n);
+  for(let j=0;j<h;j++){ let acc=0; for(let i=0;i<w;i++){ const k=j*w+i; let d=raw[k]|(raw[n+k]<<8); if(d>32767) d-=65536; acc+=d; out[k]=acc*0.01; } }
+  return out; }
+async function decodeLayers(data,w,h){ const raw=await inflate(data), n=w*h, out=new Uint8Array(n*4);
+  for(let c=0;c<4;c++) for(let j=0;j<h;j++){ let acc=0; for(let i=0;i<w;i++){ acc=(acc+raw[c*n+j*w+i])&255; out[(j*w+i)*4+c]=acc; } }
+  return out; }
+let HEQ, HS, LEQ, LS;
+const EQW=GT.h_eq.w, EQH=GT.h_eq.h, HSN=GT.h_s.n, LEW=GT.l_eq.w, LEH=GT.l_eq.h, LSN=GT.l_s.n;
+const TANC=Math.tan(COLAT*DEG/2);
+function bil(a,w,h,x,y,wrap){ if(wrap){ x=((x%w)+w)%w; } else x=clamp(x,0,w-1.001); y=clamp(y,0,h-1.001);
+  const i=Math.floor(x), j=Math.floor(y), tx=x-i, ty=y-j, i1=wrap?(i+1)%w:Math.min(i+1,w-1), j1=Math.min(j+1,h-1);
+  return (a[j*w+i]*(1-tx)+a[j*w+i1]*tx)*(1-ty)+(a[j1*w+i]*(1-tx)+a[j1*w+i1]*tx)*ty; }
+function heightKm(v){ const lat=Math.asin(clamp(v.y,-1,1))/DEG, lon=Math.atan2(v.x,v.z)/DEG;
+  const he=bil(HEQ,EQW,EQH,(lon+180)/360*EQW-0.5,(lat+90)/180*EQH-0.5,true);
+  if(lat>-75) return he;
+  const col=(90+lat)*DEG, r=Math.tan(col/2)/TANC*0.5, u=0.5+r*Math.sin(lon*DEG), w=0.5+r*Math.cos(lon*DEG);
+  const hs=bil(HS,HSN,HSN,u*HSN-0.5,w*HSN-0.5,false), k=ease((-75-lat)/1.5);
+  return he*(1-k)+hs*k; }
+
+// ---------- renderer ----------
+const canvas=document.getElementById('gl'), stageEl=document.getElementById('stage');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,logarithmicDepthBuffer:true}); renderer.autoClear=false;
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+const scene=new THREE.Scene(); scene.background=new THREE.Color('#E9E6DD');
+const ovScene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(35,16/9,0.00005,60);
+const mkLights=sc=>{ sc.add(new THREE.HemisphereLight('#ffffff','#B3A369',0.72)); const d=new THREE.DirectionalLight('#ffffff',2.3); sc.add(d); return d; };
+const sun=mkLights(scene), sun2=mkLights(ovScene);
+
+// ---------- terrain shader ----------
+const U={ uHEq:{value:null}, uHS:{value:null}, uLEq:{value:null}, uLS:{value:null}, uTan:{value:TANC}, uExag:{value:6}, uR:{value:R_KM},
+  uRamp:{value:RELIEF_COLORS.map(c=>new THREE.Color(c))}, uLayer:{value:0}, uLayerA:{value:0}, uFlash:{value:0},
+  uThr:{value:new Array(6).fill(999)}, uCol:{value:new Array(6).fill(0).map(()=>new THREE.Color())}, uPsrA:{value:0}, uGratA:{value:1}, uContA:{value:1} };
+const HFUNC=`
+uniform sampler2D uHEq; uniform sampler2D uHS; uniform float uTan; uniform float uExag; uniform float uR;
+vec2 polarUV(float lat,float lon){ float col=radians(90.0+lat); float r=tan(col*0.5)/uTan*0.5; return vec2(0.5+r*sin(radians(lon)),0.5+r*cos(radians(lon))); }
+float heightAt(vec3 d){ float lat=degrees(asin(clamp(d.y,-1.0,1.0))), lon=degrees(atan(d.x,d.z));
+  float he=texture2D(uHEq, vec2((lon+180.0)/360.0,(lat+90.0)/180.0)).r;
+  if(lat>-75.0) return he;
+  float hs=texture2D(uHS, polarUV(lat,lon)).r; float k=smoothstep(0.0,1.0,(-75.0-lat)/1.5);
+  return mix(he,hs,k); }`;
+function terrainMaterial(){
+  const mat=new THREE.MeshStandardMaterial({roughness:.95,metalness:0,side:THREE.FrontSide});
+  mat.onBeforeCompile=sh=>{
+    Object.assign(sh.uniforms,U);
+    sh.vertexShader=sh.vertexShader
+      .replace('#include <common>',`#include <common>
+${HFUNC}
+varying vec3 vDirW;`)
+      .replace('#include <begin_vertex>',`
+        float lon0=radians(position.x), lat0=radians(position.y);
+        vec3 dir=vec3(cos(lat0)*sin(lon0), sin(lat0), cos(lat0)*cos(lon0));
+        float hv=heightAt(dir);
+        vec3 transformed=dir*(1.0+hv/uR*uExag);
+        vDirW=dir;`);
+    sh.fragmentShader=sh.fragmentShader
+      .replace('#include <common>',`#include <common>
+${HFUNC}
+uniform sampler2D uLEq; uniform sampler2D uLS; uniform vec3 uRamp[16]; uniform float uLayer; uniform float uLayerA; uniform float uFlash;
+uniform float uThr[6]; uniform vec3 uCol[6]; uniform float uPsrA; uniform float uGratA; uniform float uContA;
+varying vec3 vDirW;
+float aaLine(float x, float period, float px){ float f=x/period; float fw=max(fwidth(f),1e-5); float d=abs(fract(f+0.5)-0.5)/fw; return (1.0-smoothstep(0.5,1.5,d))*(1.0-smoothstep(px*0.5,px,fw)); }
+vec4 layerAt(vec3 d){ float lat=degrees(asin(clamp(d.y,-1.0,1.0))), lon=degrees(atan(d.x,d.z));
+  vec4 le=texture2D(uLEq, vec2((lon+180.0)/360.0,(lat+90.0)/180.0));
+  if(lat>-75.0) return le;
+  vec4 ls=texture2D(uLS, polarUV(lat,lon)); return mix(le,ls,smoothstep(0.0,1.0,(-75.0-lat)/1.5)); }`)
+      .replace('#include <color_fragment>',`#include <color_fragment>
+        vec3 dN=normalize(vDirW);
+        float hF=heightAt(dN);
+        float lat=degrees(asin(clamp(dN.y,-1.0,1.0))), lon=degrees(atan(dN.x,dN.z));
+        int bi=int(clamp(floor((hF+8.75)/1.25),0.0,15.0));
+        vec3 col=uRamp[bi];
+        vec3 NAVY=vec3(0.0,0.188,0.341);
+        float minor=aaLine(hF,0.25,0.3), major=aaLine(hF+8.75,1.25,0.45);
+        col=mix(col,NAVY,uContA*(0.20*minor+0.42*major));
+        // data layers as GPU isobands: smooth edges at any zoom
+        if(uLayer>0.5 || uPsrA>0.0){
+          vec4 L=layerAt(dN);
+          if(uLayer>0.5 && uLayer<3.5){
+            float v = uLayer<1.5 ? L.r*100.0 : (uLayer<2.5 ? L.g*100.0 : L.b*30.0);
+            float fv=max(fwidth(v),1e-4); int n=0; float line=0.0;
+            for(int k=0;k<6;k++){ if(v>=uThr[k]) n=k+1; line=max(line, 1.0-smoothstep(0.5,1.4,abs(v-uThr[k])/fv)); }
+            float fillA=0.70*smoothstep(-0.8,0.8,(v-uThr[0])/fv);
+            vec3 c=uCol[max(n-1,0)];
+            col=mix(col,c,fillA*uLayerA);
+            col=mix(col,vec3(0.06,0.13,0.21),0.45*line*uLayerA);
+            col+=vec3(uFlash*fillA*0.25);
+          }
+          float pa=max(uPsrA, uLayer>3.5 ? uLayerA : 0.0);
+          if(pa>0.0){ float m=L.a, fm=max(fwidth(m),1e-4); float pm=smoothstep(0.5-fm,0.5+fm,m);
+            col=mix(col,vec3(0.918,0.667,0.0),0.92*pm*pa);
+            col=mix(col,vec3(0.48,0.35,0.0),pa*(1.0-smoothstep(0.5,1.4,abs(m-0.5)/fm))); }
+        }
+        // graticule: 15 deg, plus 5 deg and 1 deg rings near the south pole
+        float g=aaLine(lat,15.0,0.9);
+        if(lat<-80.0) g=max(g,aaLine(lat,1.0,0.9)*0.7);
+        if(lat>-89.7) g=max(g,aaLine(lon,15.0,0.9));
+        col=mix(col,NAVY,0.38*g*uGratA);
+        diffuseColor.rgb=col;`)
+      .replace('#include <normal_fragment_begin>',`#include <normal_fragment_begin>
+        {
+          vec3 up=abs(dN.y)<0.999?vec3(0.0,1.0,0.0):vec3(1.0,0.0,0.0);
+          vec3 E=normalize(cross(up,dN)), Nn=cross(dN,E);
+          float epsKm=clamp(length(fwidth(vDirW))*uR*1.5,0.35,25.0), e=epsKm/uR;
+          float h1=heightAt(normalize(dN+E*e)), h2=heightAt(normalize(dN+Nn*e)), h3=heightAt(normalize(dN-E*e)), h4=heightAt(normalize(dN-Nn*e));
+          float gx=(h1-h3)/(2.0*epsKm)*uExag, gy=(h2-h4)/(2.0*epsKm)*uExag;
+          vec3 nw=normalize(dN-gx*E-gy*Nn);
+          normal=normalize((viewMatrix*vec4(nw,0.0)).xyz);
+        }`);
+  };
+  return mat;
+}
+function buildTerrain(){
+  const pos=[], idx=[]; let nv=0;
+  const COLS=720;            // 0.5 deg in longitude, shared by both meshes
+  // global grid, 74.5S to 90N
+  const lat0=-74.5, rows=Math.round((90-lat0)/0.5);
+  for(let j=0;j<=rows;j++) for(let i=0;i<=COLS;i++) pos.push(-180+i*0.5, lat0+j*0.5, 0);
+  for(let j=0;j<rows;j++) for(let i=0;i<COLS;i++){ const a=j*(COLS+1)+i, b=a+1, c=a+COLS+1, d=c+1; idx.push(a,b,d, a,d,c); }
+  nv=(rows+1)*(COLS+1);
+  // south polar cap: rings every 0.04 deg of colatitude out to 74.5S, same longitudes
+  const ringStep=0.04, nr=Math.round(15.5/ringStep), base=nv;
+  pos.push(0,-90,0); nv++;
+  for(let k=1;k<=nr;k++){ const lat=-90+k*ringStep; for(let i=0;i<=COLS;i++) pos.push(-180+i*0.5, lat, 0); }
+  const ring=k=>base+1+(k-1)*(COLS+1);
+  for(let i=0;i<COLS;i++) idx.push(base, ring(1)+i, ring(1)+i+1);
+  for(let k=1;k<nr;k++) for(let i=0;i<COLS;i++){ const a=ring(k)+i, b=a+1, c=ring(k+1)+i, d=c+1; idx.push(a,b,d, a,d,c); }
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setIndex(idx);
+  const m=new THREE.Mesh(g,terrainMaterial()); m.frustumCulled=false; return m;
+}
+
+// ---------- sites ----------
+const SITES=Z.sites.map(s=>({...s})); SITES.forEach(s=>s.dir=llv(s.lat,s.lon));
+const byName=n=>SITES.find(s=>s.n===n);
+const MAL=[byName(Z.patches.mal.a), byName(Z.patches.mal.b)];
+const CE7=byName("Chang'e-7 target");
+const published=SITES.filter(s=>!s.approx);
+const nearestOpp=s=>published.filter(o=>o.g!==s.g).map(o=>({o,d:gcKm(s.dir,o.dir)})).sort((a,b)=>a.d-b.d)[0];
+const ce7Near=nearestOpp(CE7), malD=gcKm(MAL[0].dir,MAL[1].dir);
+const HLS_SITE = MAL[0].g==='a'?MAL[0]:MAL[1], ILRS_MAL = MAL[0].g==='b'?MAL[0]:MAL[1];
+let ZR=3;
+const symSVG=(g,approx,sz=12)=>{ const c=g==='a'?'#2E5BBA':'#E04F39', f=approx?'#fff':c;
+  return g==='a' ? `<svg width="${sz}" height="${sz}" viewBox="0 0 12 12" aria-hidden="true"><rect x="1.5" y="1.5" width="9" height="9" fill="${f}" stroke="${approx?c:'#fff'}" stroke-width="${approx?2:1.2}"/>${approx?'':`<rect x=".6" y=".6" width="10.8" height="10.8" fill="none" stroke="${c}" stroke-width=".8"/>`}</svg>`
+                 : `<svg width="${sz}" height="${sz}" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1 L11.2 10.6 L.8 10.6 Z" fill="${f}" stroke="${approx?c:'#fff'}" stroke-width="${approx?1.8:1.1}" stroke-linejoin="round"/></svg>`; };
+document.querySelectorAll('.key .sym').forEach((el,i)=>{ el.outerHTML=[symSVG('a',false),symSVG('b',false),symSVG('a',true)][i]; });
+
+// ---------- overlay helpers (drawn after terrain, no depth test) ----------
+let EX=6;
+const surfR=v=>1+heightKm(v.clone().normalize())/R_KM*EX;
+const lift=0.00004;
+const drape=v=>{ const n=v.clone().normalize(); return n.multiplyScalar(surfR(n)+lift); };
+function tangentAt(n,refUp){ let f=refUp.clone().sub(n.clone().multiplyScalar(refUp.dot(n))); if(f.lengthSq()<1e-10) f=tangentBasis(n)[1]; f.normalize(); return [new THREE.Vector3().crossVectors(f,n).normalize(), f]; }
+function geoPt(n,e,f,rad,a){ return n.clone().multiplyScalar(Math.cos(rad)).add(e.clone().multiplyScalar(Math.sin(rad)*Math.cos(a))).add(f.clone().multiplyScalar(Math.sin(rad)*Math.sin(a))); }
+function setPos(geom,arr){ geom.setAttribute('position',new THREE.Float32BufferAttribute(arr,3)); geom.computeBoundingSphere(); }
+function discGeom(geom,n,rad,N=96){ const [e,f]=tangentBasis(n), c=drape(n), arr=[]; let prev=drape(geoPt(n,e,f,rad,0));
+  for(let i=1;i<=N;i++){ const p=drape(geoPt(n,e,f,rad,i/N*2*Math.PI)); arr.push(c.x,c.y,c.z,prev.x,prev.y,prev.z,p.x,p.y,p.z); prev=p; } setPos(geom,arr); }
+function ringGeom(geom,n,r0,r1,dash=0,N=128){ const [e,f]=tangentBasis(n), arr=[];
+  for(let i=0;i<N;i++){ if(dash&&(Math.floor(i/dash)%2)) continue; const a0=i/N*2*Math.PI, a1=(i+1)/N*2*Math.PI;
+    const A=drape(geoPt(n,e,f,r1,a0)), B=drape(geoPt(n,e,f,r1,a1)), C=drape(geoPt(n,e,f,r0,a0)), Dd=drape(geoPt(n,e,f,r0,a1));
+    arr.push(A.x,A.y,A.z,B.x,B.y,B.z,C.x,C.y,C.z, B.x,B.y,B.z,Dd.x,Dd.y,Dd.z,C.x,C.y,C.z); } setPos(geom,arr); }
+function shapeGeom(geom,n,size,kind,refUp){ const [e,f]=tangentAt(n,refUp), arr=[];
+  const P=(u,v)=>drape(n.clone().add(e.clone().multiplyScalar(u*size)).add(f.clone().multiplyScalar(v*size)));
+  if(kind==='a'){ const a=P(-1,-1),b=P(1,-1),c=P(1,1),d=P(-1,1); arr.push(a.x,a.y,a.z,b.x,b.y,b.z,c.x,c.y,c.z, a.x,a.y,a.z,c.x,c.y,c.z,d.x,d.y,d.z); }
+  else { const a=P(0,1.15), b=P(1.05,-.75), c=P(-1.05,-.75); arr.push(a.x,a.y,a.z,b.x,b.y,b.z,c.x,c.y,c.z); }
+  setPos(geom,arr); }
+const oMat=(color,op)=>new THREE.MeshBasicMaterial({color,transparent:true,opacity:op,depthTest:false,depthWrite:false,side:THREE.DoubleSide});
+const addO=(mat,order)=>{ const m=new THREE.Mesh(new THREE.BufferGeometry(),mat); m.renderOrder=order; m.frustumCulled=false; ovScene.add(m); return m; };
+const COLA=new THREE.Color('#2E5BBA'), COLB=new THREE.Color('#E04F39'), WHITE=new THREE.Color('#ffffff'), NAVY=new THREE.Color('#003057');
+for(const s of SITES){ s.col=s.g==='a'?COLA:COLB;
+  s.zFill=addO(oMat(s.col,.16),10); s.zEdge=addO(oMat(s.col,.95),11); s.ref1=addO(oMat(NAVY,.55),11); s.ref5=addO(oMat(NAVY,.55),11);
+  s.mOut=addO(oMat(WHITE,1),13); s.mIn=addO(oMat(s.approx?WHITE:s.col,1),14); s.mInner=addO(oMat(s.col,1),13.5); }
+// hatched overlap lens
+const hatchCv=document.createElement('canvas'); hatchCv.width=hatchCv.height=64;
+{ const x=hatchCv.getContext('2d'); x.strokeStyle='#003057'; x.lineWidth=7; for(let k=-64;k<=128;k+=22){ x.beginPath(); x.moveTo(k,0); x.lineTo(k+64,64); x.stroke(); } }
+const hatchTex=new THREE.CanvasTexture(hatchCv); hatchTex.wrapS=hatchTex.wrapT=THREE.RepeatWrapping;
+const lens=new THREE.Mesh(new THREE.BufferGeometry(),new THREE.MeshBasicMaterial({map:hatchTex,transparent:true,opacity:0,depthTest:false,depthWrite:false,side:THREE.DoubleSide}));
+lens.renderOrder=12; lens.frustumCulled=false; ovScene.add(lens);
+const MID=MAL[0].dir.clone().add(MAL[1].dir).normalize(), [ME,MN]=tangentBasis(MID);
+const toXY=v=>{ const d=v.dot(MID); return [R_KM*v.dot(ME)/d, R_KM*v.dot(MN)/d]; };
+const fromXY=(x,y)=>MID.clone().add(ME.clone().multiplyScalar(x/R_KM)).add(MN.clone().multiplyScalar(y/R_KM)).normalize();
+function lensGeom(r){
+  const [ax,ay]=toXY(MAL[0].dir), [bx,by]=toXY(MAL[1].dir); if(Math.hypot(bx-ax,by-ay)>=2*r) return false;
+  const pts=[], inside=(x,y,cx,cy)=>Math.hypot(x-cx,y-cy)<=r+1e-9;
+  for(let i=0;i<180;i++){ const a=i/180*2*Math.PI; const x1=ax+r*Math.cos(a), y1=ay+r*Math.sin(a); if(inside(x1,y1,bx,by)) pts.push([x1,y1]);
+    const x2=bx+r*Math.cos(a), y2=by+r*Math.sin(a); if(inside(x2,y2,ax,ay)) pts.push([x2,y2]); }
+  if(pts.length<3) return false;
+  const cx=pts.reduce((s,p)=>s+p[0],0)/pts.length, cy=pts.reduce((s,p)=>s+p[1],0)/pts.length;
+  pts.sort((p,q)=>Math.atan2(p[1]-cy,p[0]-cx)-Math.atan2(q[1]-cy,q[0]-cx));
+  const arr=[], uv=[], C=drape(fromXY(cx,cy));
+  for(let i=0;i<pts.length;i++){ const p=pts[i], q=pts[(i+1)%pts.length], P=drape(fromXY(p[0],p[1])), Q=drape(fromXY(q[0],q[1]));
+    arr.push(C.x,C.y,C.z,P.x,P.y,P.z,Q.x,Q.y,Q.z); uv.push(cx/.45,cy/.45,p[0]/.45,p[1]/.45,q[0]/.45,q[1]/.45); }
+  setPos(lens.geometry,arr); lens.geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2)); return true; }
+const linkMat=new THREE.LineDashedMaterial({color:'#003057',dashSize:0.0025,gapSize:0.0015,transparent:true,opacity:0,depthTest:false});
+const link=new THREE.Line(new THREE.BufferGeometry(),linkMat); link.renderOrder=15; link.frustumCulled=false; ovScene.add(link);
+
+// ---------- notional landers (not to scale) ----------
+const M=(c,o={})=>new THREE.MeshStandardMaterial({color:c,roughness:.7,metalness:.05,flatShading:true,...o});
+function legs(grp,mat,r,h,n=4){ for(let i=0;i<n;i++){ const a=i/n*2*Math.PI+Math.PI/4; const leg=new THREE.Mesh(new THREE.CylinderGeometry(0.018,0.018,h*1.1,5),mat);
+  leg.position.set(Math.cos(a)*r*0.75,h*0.45,Math.sin(a)*r*0.75); leg.rotation.z=Math.cos(a)*0.45; leg.rotation.x=-Math.sin(a)*0.45; grp.add(leg);
+  const pad=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,0.015,10),mat); pad.position.set(Math.cos(a)*r*1.15,0.008,Math.sin(a)*r*1.15); grp.add(pad); } }
+function makeHLS(){ const g=new THREE.Group(), white=M('#F4F3EE'), navy=M('#003057'), dark=M('#3a3f47'), gold=M('#B3A369');
+  const body=new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.16,1.15,24),white); body.position.y=0.78; g.add(body);
+  const nose=new THREE.Mesh(new THREE.ConeGeometry(0.16,0.4,24),white); nose.position.y=1.555; g.add(nose);
+  const band=new THREE.Mesh(new THREE.CylinderGeometry(0.163,0.163,0.07,24),navy); band.position.y=1.12; g.add(band);
+  const band2=new THREE.Mesh(new THREE.CylinderGeometry(0.163,0.163,0.03,24),gold); band2.position.y=1.06; g.add(band2);
+  const skirt=new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.2,0.14,24),dark); skirt.position.y=0.15; g.add(skirt);
+  legs(g,dark,0.2,0.22); return g; }
+function makeLander(accent){ const g=new THREE.Group(), foil=M('#D9A93A'), dark=M('#3a3f47'), panel=M('#1d2f55'), acc=M(accent);
+  const body=new THREE.Mesh(new THREE.BoxGeometry(0.42,0.24,0.42),foil); body.position.y=0.32; g.add(body);
+  const top=new THREE.Mesh(new THREE.BoxGeometry(0.3,0.08,0.3),acc); top.position.y=0.48; g.add(top);
+  const pnl=new THREE.Mesh(new THREE.BoxGeometry(0.62,0.015,0.22),panel); pnl.position.set(0.0,0.56,0); g.add(pnl);
+  const mast=new THREE.Mesh(new THREE.CylinderGeometry(0.012,0.012,0.3,5),dark); mast.position.set(0.12,0.66,0.12); g.add(mast);
+  const dish=new THREE.Mesh(new THREE.ConeGeometry(0.07,0.04,12),dark); dish.position.set(0.12,0.82,0.12); dish.rotation.x=Math.PI; g.add(dish);
+  legs(g,dark,0.26,0.24); return g; }
+const ASSETS=[ {obj:makeHLS(), site:HLS_SITE, name:'Artemis lander'}, {obj:makeLander('#E04F39'), site:ILRS_MAL, name:'ILRS lander'}, {obj:makeLander('#E04F39'), site:CE7, name:'Chang’e-7'} ];
+for(const a of ASSETS){ a.obj.visible=false; a.obj.traverse(o=>{ if(o.isMesh){ o.renderOrder=16; o.frustumCulled=false; } }); ovScene.add(a.obj); }
+const glow=new THREE.Mesh(new THREE.ConeGeometry(0.12,0.5,16,1,true),new THREE.MeshBasicMaterial({color:'#ffd27a',transparent:true,opacity:.0,depthWrite:false,side:THREE.DoubleSide}));
+glow.rotation.x=Math.PI; glow.position.y=-0.17; glow.renderOrder=17; ASSETS[0].obj.add(glow);
+function placeAsset(a,size,descend,refUp){ const n=a.site.dir.clone().normalize(); const base=drape(n);
+  a.obj.position.copy(base).add(n.clone().multiplyScalar(descend*size));
+  const q=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),n); a.obj.quaternion.copy(q); a.obj.scale.setScalar(size); }
+
+// ---------- landing plume: illustrative ballistic ejecta ----------
+const G_MOON=1.62, PLUME_T0=40.7, TIME_K=6, NP=2600;
+let seed=7; const rnd=()=>{ seed=(seed*16807)%2147483647; return (seed-1)/2147483646; };
+const PART=[]; for(let i=0;i<NP;i++){ const v=80+520*Math.pow(rnd(),1.7), th=(0.5+2.5*rnd())*DEG, a=rnd()*2*Math.PI, tau=1.3*rnd();
+  const T=2*v*Math.sin(th)/G_MOON, Rm=v*v*Math.sin(2*th)/G_MOON; PART.push({v,th,a,tau,T,R:Rm/1000}); }
+const pGeom=new THREE.BufferGeometry(); pGeom.setAttribute('position',new THREE.Float32BufferAttribute(new Float32Array(NP*3),3)); pGeom.setAttribute('color',new THREE.Float32BufferAttribute(new Float32Array(NP*4),4));
+const plume=new THREE.Points(pGeom,new THREE.PointsMaterial({size:2.4,sizeAttenuation:false,vertexColors:true,transparent:true,depthTest:false,depthWrite:false}));
+plume.renderOrder=9; plume.frustumCulled=false; ovScene.add(plume);
+const [PE,PF]=tangentBasis(HLS_SITE.dir.clone().normalize());
+let plumeStats={out:0,inB:0};
+function computePlumeStats(){ const [hx,hy]=toXY(HLS_SITE.dir), [ix,iy]=toXY(ILRS_MAL.dir); let out=0,inB=0;
+  for(const p of PART){ if(p.R>ZR) out++; const lp=HLS_SITE.dir.clone().normalize().add(PE.clone().multiplyScalar(p.R*Math.cos(p.a)/R_KM)).add(PF.clone().multiplyScalar(p.R*Math.sin(p.a)/R_KM)).normalize();
+    const [x,y]=toXY(lp); if(Math.hypot(x-ix,y-iy)<=ZR) inB++; }
+  plumeStats={out:out/NP*100, inB:inB/NP*100}; }
+const exRange=(300*300*Math.sin(4*DEG)/G_MOON)/1000;
+function updatePlume(t,alpha){
+  const pos=pGeom.attributes.position.array, col=pGeom.attributes.color.array, n0=HLS_SITE.dir.clone().normalize();
+  for(let i=0;i<NP;i++){ const p=PART[i], tr=(t-PLUME_T0-p.tau)*TIME_K;
+    if(tr<=0||alpha<=0){ col[4*i+3]=0; continue; }
+    const tt=Math.min(tr,p.T), s=p.v*Math.cos(p.th)*tt/1000, z=tr<p.T ? (p.v*Math.sin(p.th)*tt-0.5*G_MOON*tt*tt)/1000 : 0;
+    const d=n0.clone().add(PE.clone().multiplyScalar(s*Math.cos(p.a)/R_KM)).add(PF.clone().multiplyScalar(s*Math.sin(p.a)/R_KM)).normalize();
+    const r=surfR(d)+lift+z*10/R_KM;                    // trajectory height drawn 10x
+    pos[3*i]=d.x*r; pos[3*i+1]=d.y*r; pos[3*i+2]=d.z*r;
+    const fly=tr<p.T; col[4*i]=fly?0.42:0.55; col[4*i+1]=fly?0.36:0.47; col[4*i+2]=fly?0.25:0.33; col[4*i+3]=alpha*(fly?0.95:0.55); }
+  pGeom.attributes.position.needsUpdate=true; pGeom.attributes.color.needsUpdate=true; }
+
+// ---------- timeline ----------
+const TL={ end:47.5, chapters:[[0,'01','The Moon'],[10,'02','Layers'],[23,'03','Opposing sites'],[30,'04','Safety zones']],
+  layers:[['slope',10.3,13],['sun',13,15.7],['earth',15.7,18.4],['psr',18.4,21.6]] };
+const LNAME={slope:'Slope',sun:'Sunlight',earth:'Earth in view',psr:'Permanently shadowed'};
+const CAP={ moon:'Smooth LOLA-derived relief: 1.25 km colour bands and 250 m contours. Vertical exaggeration 6×.',
+  slope:'Surface slope in degrees, from the 1/8° elevation grid.', sun:'Share of 2026 the Sun clears the local horizon, terrain included.',
+  earth:'Share of 2026 Earth is above the local horizon. Nearside up.', psr:'Permanently shadowed regions: cells the Sun never reached in 2026.',
+  sites:'Nine NASA Artemis III candidate regions against ILRS and Chang’e-7 targets.',
+  mal:()=>`Malapert: NASA's region and the ILRS candidate share one massif. ${ZR.toFixed(1)} km zones draped on the terrain.`,
+  land:'A notional Artemis lander touches down. Its plume throws regolith outward at low angles.',
+  sweep:'Sweeping the radius across the 1 to 5 km range.',
+  sha:()=>`Chang’e-7 on Shackleton's sunlit rim, with its ${ZR.toFixed(1)} km zone and the crater's shadowed floor.`,
+  back:'All zones at true scale. At this distance they are pinpricks.' };
+const midDir=(a,b)=>a.clone().add(b).normalize();
+const Pz={ pole:{dir:llv(-90,0),dist:0.95,tilt:30,up:new THREE.Vector3(0,0,1)}, layers:{dir:llv(-89.5,0),dist:0.78,tilt:24,up:new THREE.Vector3(0,0,1)},
+  sites:{dir:llv(-87.2,15),dist:0.42,tilt:26,up:new THREE.Vector3(0,0,1)}, mal:{dir:MID.clone(),dist:0.0105,tilt:40,up:new THREE.Vector3(0,0,1)},
+  malWide:{dir:HLS_SITE.dir.clone().normalize().lerp(MID,0.5).normalize(),dist:0.021,tilt:44,up:new THREE.Vector3(0,0,1)},
+  sha:{dir:CE7.dir.clone(),dist:0.024,tilt:38,up:new THREE.Vector3(0,0,1)}, back:{dir:llv(-87.4,10),dist:0.55,tilt:22,up:new THREE.Vector3(0,0,1)} };
+function spinPose(t){ const az=0.6-t*0.16, el=-0.18; return {dir:new THREE.Vector3(Math.sin(az)*Math.cos(el),Math.sin(el),Math.cos(az)*Math.cos(el)),dist:3.4,tilt:0,up:new THREE.Vector3(0,1,0)}; }
+function slerp(a,b,s){ const d=clamp(a.dot(b),-1,1), om=Math.acos(d); if(om<1e-6) return a.clone(); const so=Math.sin(om); return a.clone().multiplyScalar(Math.sin((1-s)*om)/so).add(b.clone().multiplyScalar(Math.sin(s*om)/so)).normalize(); }
+function blend(A,B,s){ return {dir:slerp(A.dir,B.dir,s),dist:Math.exp(Math.log(A.dist)*(1-s)+Math.log(B.dist)*s),tilt:A.tilt*(1-s)+B.tilt*s,up:A.up.clone().lerp(B.up,s).normalize()}; }
+function poseAt(t){
+  if(t<6) return spinPose(t);
+  if(t<10) return blend(spinPose(6),Pz.pole,easeIO(win(t,6,10)));
+  if(t<23) return blend(Pz.pole,Pz.layers,ease(win(t,10,23)));
+  if(t<30) return blend(Pz.layers,Pz.sites,easeIO(win(t,23,26.5)));
+  if(t<39.3) return blend(Pz.sites,Pz.mal,easeIO(win(t,30,34)));
+  if(t<99) return blend(Pz.mal,Pz.malWide,easeIO(win(t,39.3,41.3)));
+  if(t<51) return blend(Pz.malWide,Pz.mal,easeIO(win(t,46.5,47.6)));
+  if(t<58){ const s=easeIO(win(t,51,54.5)), q=blend(Pz.mal,Pz.sha,s); q.dist*=1+9*Math.sin(Math.PI*s); return q; }
+  return blend(Pz.sha,Pz.back,easeIO(win(t,58,61.5)));
+}
+const EX_CLOSE=1.5;
+const exagAt=t=> t<30?6 : t<58 ? 6+(EX_CLOSE-6)*ease(win(t,30,33)) : EX_CLOSE+(6-EX_CLOSE)*ease(win(t,58,61.5));
+function zoneR(t){ if(t<34) return 0; if(t<36.5) return ZR*easeIO(win(t,34,36.5)); if(t<99) return ZR;
+  if(t<47.5) return ZR+(1-ZR)*easeIO(win(t,46.5,47.5)); if(t<49.8) return 1+4*easeIO(win(t,47.5,49.8)); if(t<50.6) return 5+(ZR-5)*easeIO(win(t,49.8,50.6)); return ZR; }
+const sunOffset=new THREE.Vector3(-1.3,1.2,1.1);
+function applyCamera(t){
+  const p=poseAt(t), T=drape(p.dir);
+  let F=p.up.clone().sub(p.dir.clone().multiplyScalar(p.up.dot(p.dir))); if(F.lengthSq()<1e-8) F=new THREE.Vector3(0,0,1); F.normalize();
+  const tl=p.tilt*DEG;
+  camera.position.copy(T).add(p.dir.clone().multiplyScalar(p.dist*Math.cos(tl))).sub(F.clone().multiplyScalar(p.dist*Math.sin(tl)));
+  camera.up.copy(F); camera.lookAt(T); camera.updateMatrixWorld();
+  sun.position.copy(sunOffset).applyQuaternion(camera.quaternion).add(camera.position); sun2.position.copy(sun.position);
+  return p; }
+
+// ---------- HUD ----------
+const $=id=>document.getElementById(id);
+for(const s of SITES){ s.el=document.createElement('div'); s.el.className='lbl '+s.g+(s.approx?' x':''); s.el.textContent=s.n+(s.approx?' (approx.)':''); s.el.style.opacity=0; $('labels').appendChild(s.el); }
+const tag1=document.createElement('div'), tag5=document.createElement('div'); tag1.className=tag5.className='tag'; tag1.textContent='1 km'; tag5.textContent='5 km'; $('tags').append(tag1,tag5);
+const assetTags=ASSETS.map(a=>{ const d=document.createElement('div'); d.className='tag'; d.textContent=a.name+' (notional, not to scale)'; $('tags').appendChild(d); return d; });
+let lastLegend='';
+function legendFor(key){ if(key===lastLegend) return; lastLegend=key; const el=$('legend');
+  if(!key){ el.style.opacity=0; return; } el.style.opacity=1;
+  if(key==='relief'){ el.innerHTML=`<div class="lt">Elevation, km</div><div class="bar">${RELIEF_COLORS.map((c,i)=>`<div style="min-width:14px"><i style="background:${c}"></i>${i%4===1?`<span>${(-8.75+i*1.25).toFixed(1)}</span>`:''}</div>`).join('')}</div>`; return; }
+  if(key==='psr'){ el.innerHTML=`<div class="lt">Permanently shadowed</div><div class="bar"><div style="min-width:90px"><i style="background:#EAAA00"></i><span>0% sunlight, 2026</span></div></div>`; return; }
+  if(key==='zones'){ el.innerHTML=`<div class="lt">Close-up</div><div class="zl"><span class="sym ring"></span><span>Safety zone, radius as set</span><span class="sym hatch"></span><span>Zones overlap</span><span class="sym" style="background:#8a7a58;border-radius:50%"></span><span>Plume ejecta (illustrative)</span><span class="sym" style="background:#EAAA00"></span><span>Permanently shadowed</span><span style="width:14px;border-top:1.5px solid #003057;height:0"></span><span>250 m contours, 1.25 km bold</span></div>`; return; }
+  const L=LAYERS[key]; el.innerHTML=`<div class="lt">${L.title}</div><div class="bar">${L.col.map((c,i)=>`<div><i style="background:${c}"></i><span>≥${L.thr[i]}</span></div>`).join('')}</div>`; }
+const fmt1=v=>v.toFixed(1);
+function cardHTML(s){ const no=nearestOpp(s);
+  return `<div class="card ${s.g}"><div class="h">${symSVG(s.g,s.approx)}${s.n}</div><div class="p">${s.g==='a'?'Artemis III region':'ILRS / Chang’e-7'} · ${Math.abs(s.lat).toFixed(2)}°S ${Math.abs(s.lon).toFixed(1)}°${s.lon<0?'W':'E'}</div>
+  <dl><dt>Elevation</dt><dd>${s.elev_km>=0?'+':'−'}${Math.abs(s.elev_km).toFixed(2)} km</dd><dt>Slope</dt><dd>${fmt1(s.slope_deg)}°</dd>
+  <dt>Sunlight</dt><dd>${fmt1(s.sun_pct)}%</dd><dt>Earth in view</dt><dd>${fmt1(s.earth_pct)}%</dd><dt>Nearest PSR</dt><dd>${fmt1(s.psr_km)} km</dd>
+  <dt>Nearest opposing</dt><dd>${no?no.d.toFixed(1)+' km':'n/a'}</dd></dl></div>`; }
+let cardsKey='';
+function setCards(key){ if(key===cardsKey) return; cardsKey=key; const el=$('cards'); el.innerHTML=key==='mal'?MAL.map(cardHTML).join(''):key==='sha'?cardHTML(CE7):''; el.style.opacity=key?1:0; }
+function chapter(t){ let c=TL.chapters[0]; for(const ch of TL.chapters) if(t>=ch[0]) c=ch; let title=c[2], cap=CAP.moon;
+  if(c[1]==='02'){ const L=TL.layers.find(l=>t>=l[1]-0.3&&t<l[2])||TL.layers[3]; title='Layers · '+LNAME[L[0]]; cap=CAP[L[0]]; }
+  if(c[1]==='03') cap=CAP.sites;
+  if(c[1]==='04'){ if(t<39.3){ title='Safety zones · Malapert'; cap=CAP.mal(); } else if(t<99){ title='Landing plume · Malapert'; cap=CAP.land; }
+    else if(t<51){ title='Safety zones · radius sweep'; cap=CAP.sweep; } else if(t<58){ title='Safety zones · Shackleton'; cap=CAP.sha(); } else { title='Safety zones'; cap=CAP.back; } }
+  $('chN').textContent=c[1]; $('chT').textContent=title; $('chC').textContent=cap; }
+const v3=new THREE.Vector3();
+function project(p){ v3.copy(p).project(camera); const r=stageEl.getBoundingClientRect(); return [(v3.x*.5+.5)*r.width,(-v3.y*.5+.5)*r.height,v3.z]; }
+function kmPerPx(target){ const [e]=tangentBasis(target.clone().normalize()); const a=project(target), b=project(target.clone().add(e.multiplyScalar(1/R_KM))); return 1/Math.max(1e-6,Math.hypot(a[0]-b[0],a[1]-b[1])); }
+function endText(){ const ov=2*ZR-malD;
+  $('endH').textContent = ov>0 ? `At ${ZR.toFixed(1)} km, Artemis and ILRS zones collide at Malapert, and a landing plume reaches past them` : `At ${ZR.toFixed(1)} km the Malapert zones stay clear, but a landing plume still reaches past them`;
+  $('e1').textContent = ov>0 ? `${ov.toFixed(1)} km overlap` : `${(-ov).toFixed(1)} km clear`; $('e1s').textContent=`Malapert: centres ${malD.toFixed(1)} km apart, touching at ${(malD/2).toFixed(2)} km radius`;
+  $('e2').textContent = `${plumeStats.out.toFixed(0)}%`; $('e2s').textContent=`of the illustrative ejecta lands beyond the Artemis zone; ${plumeStats.inB.toFixed(0)}% lands inside the ILRS zone`;
+  $('e3').textContent = `${ce7Near.d.toFixed(0)} km`; $('e3s').textContent=`Chang’e-7 target to the nearest published Artemis region (${ce7Near.o.n})`; }
+
+// ---------- frame ----------
+function render(t){
+  EX=exagAt(t); U.uExag.value=EX;
+  const p=applyCamera(t);
+  let layKey=null, la=0, fl=0;
+  for(const [k,a,b] of TL.layers){ if(t>=a&&t<b){ layKey=k; la=win(t,a,a+0.22)*(1-win(t,b-0.35,b)); fl=Math.max(0,1-Math.abs(t-(a+0.22))/0.3); } }
+  U.uLayer.value = layKey==='sun'?1:layKey==='earth'?2:layKey==='slope'?3:layKey==='psr'?4:0;
+  if(LAYERS[layKey]){ const L=LAYERS[layKey]; for(let i=0;i<6;i++){ U.uThr.value[i]=i<L.thr.length?L.thr[i]:999; U.uCol.value[i].set(L.col[Math.min(i,L.col.length-1)]); } }
+  U.uLayerA.value=la; U.uFlash.value=fl;
+  U.uPsrA.value = t<20.8?0 : t<30 ? 0.65*win(t,20.8,21.2) : 0.65-0.15*win(t,30,32);
+  U.uGratA.value = t<10 ? 0.55+0.45*win(t,7,10) : t<30?1 : t<58 ? 1-0.75*win(t,30,32) : 0.25+0.75*win(t,58,61);
+  U.uContA.value = t<10 ? 0.35+0.65*win(t,7,10) : 1;
+  chapter(t);
+  legendFor(t<10?'relief': t<18.4?(layKey||'relief') : t<23?'psr' : t<33?null : 'zones');
+  setCards(t>=34.5&&t<51?'mal' : t>=54.5&&t<58?'sha' : '');
+  $('key').style.opacity = (t>=23&&t<34.5)||(t>=51&&t<54.5)||(t>=58&&t<61.5) ? 1 : 0;
+  const zr=zoneR(t), zrad=zr/R_KM, zoneOn=t>=34&&t<61.5, sweepOn=false, refA=win(t,46.6,47.2)*(1-win(t,50.6,51.2));
+  const camDist=p.dist, placed=[], lab=[], stageR=stageEl.getBoundingClientRect(), camUp=camera.up.clone();
+  let ia=0, ib=0;
+  for(const s of SITES){
+    const idx=s.g==='a'?ia++:ib++;
+    const vis = t>=61.5 ? 1-win(t,61.5,62.5) : (s.g==='a'?win(t,23.2+idx*0.28,23.55+idx*0.28):win(t,26+idx*0.4,26.35+idx*0.4));
+    const pop = vis>0&&vis<1 ? 1+0.5*Math.sin(Math.PI*vis) : 1, size=Math.max(camDist*0.0062,0.00003)*pop;
+    for(const m of [s.mOut,s.mIn,s.mInner]) m.visible=vis>0;
+    if(vis>0){ shapeGeom(s.mOut.geometry,s.dir,size*1.35,s.g,camUp); shapeGeom(s.mIn.geometry,s.dir,size,s.g,camUp);
+      if(s.approx){ shapeGeom(s.mInner.geometry,s.dir,size*1.08,s.g,camUp); shapeGeom(s.mIn.geometry,s.dir,size*0.62,s.g,camUp); } else s.mInner.visible=false;
+      s.mOut.material.opacity=s.mIn.material.opacity=s.mInner.material.opacity=vis; }
+    const zv=zoneOn&&zr>0.02&&!s.approx; s.zFill.visible=s.zEdge.visible=zv;
+    if(zv){ discGeom(s.zFill.geometry,s.dir,zrad); const w=Math.max(camDist*0.0028,zrad*0.03); ringGeom(s.zEdge.geometry,s.dir,Math.max(0,zrad-w),zrad);
+      const hot=MAL.includes(s)&&t>36.5&&t<39.3; s.zFill.material.opacity=0.15+(hot?0.08*(0.5+0.5*Math.sin((t-36.5)*6)):0); }
+    const showRef=sweepOn&&MAL.includes(s); s.ref1.visible=s.ref5.visible=showRef;
+    if(showRef){ const w=Math.max(camDist*0.0016,0.00002); ringGeom(s.ref1.geometry,s.dir,1/R_KM-w,1/R_KM,3); ringGeom(s.ref5.geometry,s.dir,5/R_KM-w,5/R_KM,3); s.ref1.material.opacity=s.ref5.material.opacity=.6*refA; }
+    const [x,y,z]=project(drape(s.dir));
+    const facing=s.dir.dot(camera.position.clone().sub(s.dir).normalize())>0.05, inView=x>-40&&x<stageR.width+40&&y>-20&&y<stageR.height+20&&z<1;
+    let op=vis*(facing&&inView?1:0);
+    const focus=(t>=31&&t<51)?MAL.includes(s):(t>=51&&t<58)?(s===CE7||s===ce7Near.o||s.n==='Shackleton ridge'):true;
+    if(!focus) op*=(t<31.8?1-win(t,31,31.8):0);
+    lab.push({s,x,y,op}); }
+  lab.sort((a,b)=>(MAL.includes(b.s)||b.s===CE7)-(MAL.includes(a.s)||a.s===CE7)||(b.s.g==='b')-(a.s.g==='b'));
+  for(const L of lab){ let op=L.op; if(op>0.01){ const box=[L.x+9,L.y-9,L.x+9+L.s.el.textContent.length*6.2+12,L.y+9];
+      if(placed.some(b=>!(box[2]<b[0]||box[0]>b[2]||box[3]<b[1]||box[1]>b[3]))) op=0; else placed.push(box); }
+    L.s.el.style.opacity=op; L.s.el.style.left=L.x+'px'; L.s.el.style.top=L.y+'px'; }
+  if(sweepOn&&refA>0){ const [e,f]=tangentAt(ILRS_MAL.dir,camUp); const p1=project(drape(geoPt(ILRS_MAL.dir,e,f,1/R_KM,Math.PI/2))), p5=project(drape(geoPt(ILRS_MAL.dir,e,f,5/R_KM,Math.PI/2)));
+    tag1.style.left=p1[0]+'px'; tag1.style.top=(p1[1]-8)+'px'; tag5.style.left=p5[0]+'px'; tag5.style.top=(p5[1]-8)+'px'; tag1.style.opacity=tag5.style.opacity=refA; } else tag1.style.opacity=tag5.style.opacity=0;
+  const lensOn=zoneOn&&t<51&&lensGeom(zr); lens.visible=!!lensOn; lens.material.opacity=lensOn?0.55*win(t,36.3,37):0;
+  // landers (notional, not to scale)
+  const assetSize=camDist*0.075;
+  ASSETS.forEach((a,i)=>{ let on=0, desc=0;
+    if(i===0){ on=win(t,39.0,39.6)*(1-win(t,50.6,51.2)); desc=6*(1-easeIO(win(t,39.5,41.4))); }
+    if(i===1){ on=win(t,35.5,36.3)*(1-win(t,50.6,51.2)); }
+    if(i===2){ on=win(t,53.8,54.6)*(1-win(t,58,58.6)); }
+    a.obj.visible=on>0.01;
+    if(a.obj.visible){ placeAsset(a,assetSize*(0.6+0.4*on),desc,camUp); a.obj.traverse(o=>{ if(o.isMesh&&o!==glow){ o.material.transparent=on<1; o.material.opacity=on; } }); }
+    const [x,y]=project(a.obj.position.clone().add(a.site.dir.clone().normalize().multiplyScalar(assetSize*(i===0?2.1:1.15))));
+    assetTags[i].style.left=x+'px'; assetTags[i].style.top=(y-10)+'px'; assetTags[i].style.opacity = on*((t>36.5&&t<39.3&&i===1)||(t>39.6&&t<44&&i===0)||(t>54.6&&t<57.6&&i===2)?1:0); });
+  glow.material.opacity = t>39.6&&t<41.6 ? 0.85*(0.6+0.4*Math.sin(t*40)) : 0; glow.scale.set(1,1+0.6*win(t,40.4,41.4),1);
+  updatePlume(t, t<PLUME_T0 ? 0 : t<50.6 ? 1 : 1-win(t,50.6,51.4));
+  // callouts
+  const call=$('call'), ov=2*zr-malD;
+  if(t>=36.5&&t<39.3){ const [x,y]=project(drape(MID)); call.style.left=x+'px'; call.style.top=(y-46)+'px';
+    call.innerHTML = ov>0 ? `Centres <b>${malD.toFixed(1)} km</b> apart · zones overlap by <b>${ov.toFixed(1)} km</b>` : `Centres <b>${malD.toFixed(1)} km</b> apart · zones clear by <b>${(-ov).toFixed(1)} km</b>`;
+    call.style.opacity=win(t,36.5,37)*(1-win(t,38.8,39.3));
+  } else if(t>=42.6&&t<46.4){ const [x,y]=project(drape(HLS_SITE.dir)); call.style.left=x+'px'; call.style.top=(y-70)+'px';
+    call.innerHTML=`Ejecta at 2° and 300 m/s lands <b>${exRange.toFixed(1)} km</b> out · <b>${plumeStats.out.toFixed(0)}%</b> of this spray falls beyond the ${ZR.toFixed(1)} km zone, <b>${plumeStats.inB.toFixed(0)}%</b> inside the ILRS zone`;
+    call.style.opacity=win(t,42.6,43.1)*(1-win(t,45.9,46.4));
+  } else if(t>=54.8&&t<58){ const [x,y]=project(drape(CE7.dir)); call.style.left=x+'px'; call.style.top=(y-52)+'px';
+    call.innerHTML=`Nearest shadowed cell <b>${CE7.psr_km.toFixed(0)} km</b> · nearest Artemis region <b>${ce7Near.d.toFixed(0)} km</b> (${ce7Near.o.n})`;
+    call.style.opacity=win(t,54.8,55.4)*(1-win(t,57.5,58)); } else call.style.opacity=0;
+  const meter=$('meter'); meter.style.opacity=sweepOn?win(t,46.5,47)*(1-win(t,50.8,51.2)):0;
+  if(sweepOn){ $('mF').style.width=(clamp((zr-1)/4)*100)+'%'; $('mR').textContent=`${zr.toFixed(2)} km`; $('mT').style.left=(clamp((malD/2-1)/4)*100)+'%';
+    $('mS').innerHTML = ov>0 ? `<span style="color:#E04F39">overlap ${ov.toFixed(2)} km</span>` : `clear by ${(-ov).toFixed(2)} km · touch at ${(malD/2).toFixed(2)} km`; }
+  linkMat.opacity=(t>=59&&t<62)?win(t,59,59.8)*(1-win(t,61.5,62)):0;
+  if(linkMat.opacity>0){ const pts=[]; for(let i=0;i<=60;i++) pts.push(drape(slerp(CE7.dir,ce7Near.o.dir,i/60))); link.geometry.setFromPoints(pts); link.computeLineDistances(); linkMat.dashSize=camDist*0.012; linkMat.gapSize=camDist*0.008; }
+  const sc=$('scale'); if(t>=31&&t<58.5){ const kpp=kmPerPx(drape(p.dir)), nice=[1,2,3,5,10,20,50].find(v=>v/kpp>=70)||50; $('scaleT').textContent=`${nice} km`; $('scaleBar').style.width=(nice/kpp)+'px'; sc.style.opacity=1; } else sc.style.opacity=0;
+  
+  renderer.clear(); renderer.render(scene,camera); renderer.clearDepth(); renderer.render(ovScene,camera);
+}
+
+// ---------- explorer ----------
+const pairsAll=[]; for(const a of published.filter(s=>s.g==='a')) for(const b of published.filter(s=>s.g==='b')) pairsAll.push({a,b,d:gcKm(a.dir,b.dir)});
+pairsAll.sort((x,y)=>x.d-y.d);
+function renderTables(){
+  $('pairs').innerHTML=`<thead><tr><th>Artemis III region</th><th>ILRS site</th><th class="n">Separation</th><th class="n">Touch at</th><th>At ${ZR.toFixed(1)} km</th></tr></thead><tbody>`+
+    pairsAll.slice(0,10).map(p=>{ const ov=2*ZR-p.d, cls=ov>0?'bad':ov>-2?'near':'ok', txt=ov>0?`Overlap ${ov.toFixed(1)} km`:`Clear by ${(-ov).toFixed(1)} km`;
+      return `<tr><td><span class="nm">${symSVG('a',false,11)}${p.a.n}</span></td><td><span class="nm">${symSVG('b',false,11)}${p.b.n}</span></td><td class="n">${p.d.toFixed(1)} km</td><td class="n">${(p.d/2).toFixed(1)} km</td><td><span class="pill ${cls}">${txt}</span></td></tr>`; }).join('')+'</tbody>'; }
+$('sites').innerHTML=`<thead><tr><th>Site</th><th class="n">Lat</th><th class="n">Lon</th><th class="n">Elev.</th><th class="n">Slope</th><th class="n">Sun</th><th class="n">Earth</th><th class="n">Nearest PSR</th></tr></thead><tbody>`+
+  SITES.map(s=>`<tr><td><span class="nm" title="${s.src}">${symSVG(s.g,s.approx,11)}${s.n}${s.approx?' <em style="color:var(--muted)">approx.</em>':''}</span></td><td class="n">${Math.abs(s.lat).toFixed(2)}°S</td><td class="n">${Math.abs(s.lon).toFixed(1)}°${s.lon<0?'W':'E'}</td>${s.approx?'<td class="n" colspan="5" style="text-align:center;color:var(--muted)">position not published; no metrics</td>':`<td class="n">${s.elev_km.toFixed(2)} km</td><td class="n">${s.slope_deg.toFixed(1)}°</td><td class="n">${s.sun_pct.toFixed(0)}%</td><td class="n">${s.earth_pct.toFixed(0)}%</td><td class="n">${s.psr_km.toFixed(1)} km</td>`}</tr>`).join('')+'</tbody>';
+const zrIn=$('zr'), zrOut=$('zrv');
+let dirty=true;
+function setZR(v){ ZR=v; zrOut.textContent=`${v.toFixed(1)} km`; computePlumeStats(); renderTables(); cardsKey='~'; dirty=true; }
+zrIn.oninput=()=>setZR(+zrIn.value);
+
+// ---------- transport ----------
+const scrub=$('scrub'), playBtn=$('play'), timeEl=$('time'), loopEl=$('loop');
+scrub.max=TL.end;
+const fmt=s=>`${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+TL.chapters.forEach(([t0,n,name])=>{ const s=document.createElement('span'); s.style.left=(t0/TL.end*100)+'%'; s.textContent=`${n} ${({'The Moon':'Moon','Layers':'Layers','Opposing sites':'Sites','Safety zones':'Zones'})[name]}`; $('ticks').appendChild(s); });
+let t=0, playing=!matchMedia('(prefers-reduced-motion: reduce)').matches, last=null;
+if(!playing) t=44.5;
+setZR(3);
+function setPlaying(pl){ playing=pl; dirty=true; playBtn.textContent=pl?'Pause':'Play'; last=null; }
+playBtn.onclick=()=>{ if(!playing&&t>=TL.end-0.01) t=0; setPlaying(!playing); };
+$('restart').onclick=()=>{ t=0; setPlaying(true); };
+scrub.oninput=()=>{ t=+scrub.value; dirty=true; };
+function updateTime(){ scrub.value=t; timeEl.textContent=`${fmt(t)} / ${fmt(TL.end)}`; }
+function resize(){ const r=stageEl.getBoundingClientRect(); renderer.setSize(r.width,r.height,false); camera.aspect=r.width/r.height; camera.updateProjectionMatrix(); }
+new ResizeObserver(()=>{ resize(); dirty=true; }).observe(stageEl);
+window.__seek=s=>{ setPlaying(false); t=s; render(t); updateTime(); dirty=false; };
+window.__zr=v=>{ zrIn.value=v; setZR(v); };
+
+async function start(){
+  [HEQ,HS,LEQ,LS]=await Promise.all([decodeHeight(GT.h_eq.data,EQW,EQH), decodeHeight(GT.h_s.data,HSN,HSN), decodeLayers(GT.l_eq.data,LEW,LEH), decodeLayers(GT.l_s.data,LSN,LSN)]);
+  const half=a=>{ const o=new Uint16Array(a.length); for(let i=0;i<a.length;i++) o[i]=THREE.DataUtils.toHalfFloat(a[i]); return o; };
+  const hTex=(a,w,h,wrap)=>{ const t=new THREE.DataTexture(half(a),w,h,THREE.RedFormat,THREE.HalfFloatType); t.magFilter=t.minFilter=THREE.LinearFilter; t.wrapS=wrap?THREE.RepeatWrapping:THREE.ClampToEdgeWrapping; t.wrapT=THREE.ClampToEdgeWrapping; t.needsUpdate=true; return t; };
+  const lTex=(a,w,h,wrap)=>{ const t=new THREE.DataTexture(a,w,h,THREE.RGBAFormat,THREE.UnsignedByteType); t.magFilter=THREE.LinearFilter; t.minFilter=THREE.LinearMipmapLinearFilter; t.generateMipmaps=true; t.wrapS=wrap?THREE.RepeatWrapping:THREE.ClampToEdgeWrapping; t.needsUpdate=true; return t; };
+  U.uHEq.value=hTex(HEQ,EQW,EQH,true); U.uHS.value=hTex(HS,HSN,HSN,false); U.uLEq.value=lTex(LEQ,LEW,LEH,true); U.uLS.value=lTex(LS,LSN,LSN,false);
+  scene.add(buildTerrain());
+  $('loading').hidden=true; resize(); setPlaying(playing);
+  function loop(now){ if(playing){ if(last!==null) t+=Math.min(0.1,(now-last)/1000); last=now; if(t>=TL.end){ if(loopEl.checked) t=0; else { t=TL.end; setPlaying(false); } } }
+    if(playing||dirty){ render(t); updateTime(); dirty=false; } requestAnimationFrame(loop); }
+  requestAnimationFrame(loop);
+}
+start();
+</script>
