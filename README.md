@@ -1,6 +1,6 @@
 # Lunar south pole: layers, opposing sites, safety zones and landing plumes
 
-[Animation: the Moon spins and tilts to the south pole, slope, sunlight, Earth-in-view and permanently shadowed layers flash on, Artemis III and ILRS sites appear with 3 km safety zones, and a lander's dust plume sprays past the zones at Malapert](south-pole-zones-preview.gif)
+[Animation: the Moon spins and tilts to the south pole, slope, sunlight, Earth-in-view and permanently shadowed layers flash on, Artemis III and ILRS sites appear with 3 km safety zones, and a lander's dust plume sprays past the zones at Malapert](media/south-pole-zones-preview.gif)
 
 The animation, 47 s. Blue squares: NASA Artemis III candidate regions. Red triangles: ILRS and Chang'e-7 targets.
 Gold: permanently shadowed regions. Circles: 3 km safety zones, overlap hatched. Brown dots: illustrative landing-plume ejecta.
