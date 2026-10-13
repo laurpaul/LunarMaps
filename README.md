@@ -1,6 +1,6 @@
 # Lunar south pole: layers, opposing sites, safety zones and landing plumes
 
-Source for the 3D animation (ESPL style) and the flat 2D layer maps.
+Source for the 3D animation and the flat 2D layer maps.
 
 ## Contents
 
